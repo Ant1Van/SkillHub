@@ -1,0 +1,124 @@
+<p align="center">
+  <img src="src-tauri/icons/128x128@2x.png" width="120" alt="SkillHub Logo" />
+</p>
+
+<h1 align="center">SkillHub for Claude Code</h1>
+
+<p align="center">
+  <strong>The open-source GUI and Community Marketplace for managing Claude Code skills.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Ant1Van/SkillHub/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status" /></a>
+  <a href="https://github.com/Ant1Van/SkillHub/releases"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platforms" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="License" /></a>
+  <a href="https://tauri.app"><img src="https://img.shields.io/badge/built%20with-Tauri%202.0-orange?style=flat-square" alt="Tauri 2" /></a>
+</p>
+
+---
+
+## 💡 Why SkillHub?
+
+Claude Code brings powerful autonomous capabilities through its **Skills** system (`SKILL.md`). However, skills typically sit hidden inside `~/.claude/skills/` with:
+- ❌ No visual way to know which skills are currently active or disabled.
+- ❌ No one-click toggle to enable/disable skills for specific tasks.
+- ❌ No centralized marketplace to discover and install community skills.
+- ❌ Manual folder creation and terminal commands required to add or delete skills.
+
+**SkillHub solves this completely.** It provides a lightweight, ultra-fast native desktop application that lives in your menu bar and dock, giving you full visual mastery over your Claude Code workflow.
+
+---
+
+## ✨ Features
+
+- ⚡ **Lightweight & Fast**: Built with **Tauri 2.0 (Rust)** + **React 19** + **Tailwind CSS v4**. Bundle size is only **~4 MB** with near-zero memory footprint.
+- 🎛️ **Instant On/Off Toggle**: Disable or enable any skill instantly without losing your configuration.
+- 🛍️ **1-Click Community Marketplace**:
+  - **Curated Vault**: Explore top skills for Testing (Playwright, TDD), Security, DevOps, Database optimization, and AI Agent workflows.
+  - **Live GitHub Search**: Search open-source community repositories on GitHub and clone them directly into your Claude skills directory.
+- 🔍 **Real-Time Search & Filters**: Filter by `All`, `Active`, or `Disabled` status with instant keyboard shortcut (`⌘K` / `Ctrl+K`).
+- 🛠️ **Full Studio Mode**:
+  - Inspect frontmatter and full documentation.
+  - Explore nested scripts (`scripts/`, `agents/`, `references/`).
+  - Integrated `SKILL.md` editor with live saving.
+- 🗑️ **Safe Skill Deletion**: Uninstall unused skills cleanly with one click.
+- 🔗 **Quick GitHub & Finder Links**: Direct links to open the original repository or reveal files on disk.
+- 🎨 **Impeccable Design Standards**: Strictly adheres to modern dark-mode craft—balanced contrast, micro-grid rhythm, and zero visual clutter.
+
+---
+
+## 📥 Installation & Downloads
+
+Download pre-built installers for your operating system from the **[Releases](https://github.com/Ant1Van/SkillHub/releases)** page:
+
+| Operating System | Package Format |
+|---|---|
+| **macOS** (Apple Silicon) | `.dmg` / `.app` |
+| **macOS** (Intel x86_64) | `.dmg` / `.app` |
+| **Windows** (x64) | `.exe` / `.msi` |
+| **Linux** (Ubuntu/Debian) | `.AppImage` / `.deb` |
+
+---
+
+## 🚀 Quickstart for Developers
+
+```bash
+# Clone the repository
+git clone https://github.com/Ant1Van/SkillHub.git
+cd SkillHub
+
+# Install dependencies
+npm install
+
+# Start in development mode with Hot Reload
+npm run tauri dev
+```
+
+---
+
+## 🧪 Testing
+
+SkillHub comes with complete automated test coverage for both the frontend and backend:
+
+```bash
+# Run Frontend Tests (Vitest & Testing Library)
+npm run test
+
+# Run Rust Backend Tests
+cd src-tauri && cargo test
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+skillhub/
+├── .github/workflows/       # CI/CD (Multiplatform builds + test checks)
+├── src/
+│   ├── components/          # Modular UI components (Header, Cards, Modals)
+│   ├── data/                # Curated marketplace skills directory
+│   ├── hooks/               # State management (useSkills)
+│   ├── services/            # Typed IPC bridge (api.ts)
+│   └── types.ts             # Shared TypeScript schemas
+└── src-tauri/
+    ├── src/
+    │   ├── models.rs        # Rust data structures
+    │   ├── skills.rs        # Skills filesystem CRUD & frontmatter parser
+    │   ├── marketplace.rs   # 1-Click install & Git clone engine
+    │   ├── window.rs        # Cross-platform window & shell actions
+    │   └── lib.rs           # Tauri app entrypoint & command dispatch
+    └── Cargo.toml           # Rust dependencies
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on submitting issues, feature requests, or adding your own skill to the curated index.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
