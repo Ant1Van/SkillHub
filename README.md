@@ -12,7 +12,8 @@
   <a href="https://github.com/Ant1Van/SkillHub/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status" /></a>
   <a href="https://github.com/Ant1Van/SkillHub/releases"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platforms" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-purple?style=flat-square" alt="License" /></a>
-  <a href="https://tauri.app"><img src="https://img.shields.io/badge/built%20with-Tauri%202.0-orange?style=flat-square" alt="Tauri 2" /></a>
+  <a href="https://github.com/Ant1Van/homebrew-tap"><img src="https://img.shields.io/badge/homebrew-cask-orange?style=flat-square&logo=homebrew" alt="Homebrew Cask" /></a>
+  <a href="https://tauri.app"><img src="https://img.shields.io/badge/built%20with-Tauri%202.0-blueviolet?style=flat-square" alt="Tauri 2" /></a>
 </p>
 
 ---
@@ -47,16 +48,42 @@ Claude Code brings powerful autonomous capabilities through its **Skills** syste
 
 ---
 
-## 📥 Installation & Downloads
+## 📥 Installation
 
-Download pre-built installers for your operating system from the **[Releases](https://github.com/Ant1Van/SkillHub/releases)** page:
+### macOS (via Homebrew) 🍏
 
-| Operating System | Package Format |
-|---|---|
-| **macOS** (Apple Silicon) | `.dmg` / `.app` |
-| **macOS** (Intel x86_64) | `.dmg` / `.app` |
-| **Windows** (x64) | `.exe` / `.msi` |
-| **Linux** (Ubuntu/Debian) | `.AppImage` / `.deb` |
+Install SkillHub in one command via the official tap:
+
+```bash
+brew install --cask Ant1Van/tap/skillhub
+```
+
+Or tap first and then install:
+
+```bash
+brew tap Ant1Van/tap
+brew install --cask skillhub
+```
+
+To update in the future:
+```bash
+brew upgrade --cask skillhub
+```
+
+---
+
+### Direct Download & Other Platforms 📦
+
+Download pre-built packages from the **[Latest Release](https://github.com/Ant1Van/SkillHub/releases/latest)**:
+
+| Operating System | Architecture | Package Format |
+|---|---|---|
+| **macOS** | Apple Silicon (M1/M2/M3/M4) | [`.dmg`](https://github.com/Ant1Van/SkillHub/releases/latest) |
+| **macOS** | Intel (x86_64) | [`.dmg`](https://github.com/Ant1Van/SkillHub/releases/latest) |
+| **Windows** | x64 | Setup [`.exe`](https://github.com/Ant1Van/SkillHub/releases/latest) / [`.msi`](https://github.com/Ant1Van/SkillHub/releases/latest) |
+| **Linux** | x64 (Universal) | [`.AppImage`](https://github.com/Ant1Van/SkillHub/releases/latest) |
+| **Linux** (Debian / Ubuntu) | x64 | [`.deb`](https://github.com/Ant1Van/SkillHub/releases/latest) |
+| **Linux** (Fedora / RHEL) | x64 | [`.rpm`](https://github.com/Ant1Van/SkillHub/releases/latest) |
 
 ---
 
