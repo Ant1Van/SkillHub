@@ -2,6 +2,37 @@ use crate::models::{AgentTarget, SkillFile, SkillItem};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+pub fn sanitize_skill_id(id: &str) -> Result<String, String> {
+    let trimmed = id.trim();
+    if trimmed.is_empty() {
+        return Err("Skill ID cannot be empty.".to_string());
+    }
+
+    if trimmed == "."
+        || trimmed == ".."
+        || trimmed.contains("..")
+        || trimmed.contains('/')
+        || trimmed.contains('\\')
+        || trimmed.contains(':')
+        || trimmed.contains('\0')
+    {
+        return Err("Security error: Invalid skill ID. Path traversal sequences detected.".to_string());
+    }
+
+    if trimmed.starts_with('.') && !trimmed.ends_with(".disabled") {
+        return Err("Security error: Skill ID cannot start with a dot.".to_string());
+    }
+
+    let is_valid = trimmed
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_' || c == '.');
+    if !is_valid {
+        return Err("Security error: Skill ID may only contain alphanumeric characters, hyphens, and underscores.".to_string());
+    }
+
+    Ok(trimmed.to_string())
+}
+
 pub fn get_agent_skills_dir(agent_id: Option<&str>, custom_path: Option<&str>) -> PathBuf {
     if let Some(cp) = custom_path {
         let trimmed = cp.trim();
@@ -263,9 +294,12 @@ pub fn toggle_skill(
     agent_id: Option<String>,
     custom_path: Option<String>,
 ) -> Result<SkillItem, String> {
+    let safe_id = sanitize_skill_id(&id)?;
+    let base_name = safe_id.trim_end_matches(".disabled");
+
     let skills_dir = get_agent_skills_dir(agent_id.as_deref(), custom_path.as_deref());
-    let current_enabled_path = skills_dir.join(&id);
-    let current_disabled_path = skills_dir.join(format!("{}.disabled", id));
+    let current_enabled_path = skills_dir.join(base_name);
+    let current_disabled_path = skills_dir.join(format!("{}.disabled", base_name));
 
     let (src, dst) = if enabled {
         (current_disabled_path, current_enabled_path)
@@ -287,13 +321,13 @@ pub fn toggle_skill(
     };
 
     let (parsed_name, parsed_desc) = parse_frontmatter(&raw_content);
-    let display_name = parsed_name.unwrap_or_else(|| id.clone());
+    let display_name = parsed_name.unwrap_or_else(|| base_name.to_string());
     let description = parsed_desc.unwrap_or_default();
     let files = list_skill_files(&dst);
     let files_count = files.iter().filter(|f| !f.is_dir).count();
 
     Ok(SkillItem {
-        id: id.clone(),
+        id: base_name.to_string(),
         name: dst.file_name().unwrap().to_string_lossy().to_string(),
         display_name,
         description,
@@ -313,10 +347,13 @@ pub fn save_skill_content(
     agent_id: Option<String>,
     custom_path: Option<String>,
 ) -> Result<(), String> {
+    let safe_id = sanitize_skill_id(&id)?;
+    let base_name = safe_id.trim_end_matches(".disabled");
+
     let skills_dir = get_agent_skills_dir(agent_id.as_deref(), custom_path.as_deref());
-    let mut skill_path = skills_dir.join(&id);
+    let mut skill_path = skills_dir.join(base_name);
     if !skill_path.exists() {
-        skill_path = skills_dir.join(format!("{}.disabled", id));
+        skill_path = skills_dir.join(format!("{}.disabled", base_name));
     }
 
     if !skill_path.exists() {
@@ -336,11 +373,11 @@ pub fn create_skill(
     agent_id: Option<String>,
     custom_path: Option<String>,
 ) -> Result<String, String> {
-    let safe_id = name.trim().to_lowercase().replace(' ', "-");
+    let safe_id = sanitize_skill_id(&name.trim().to_lowercase().replace(' ', "-"))?;
     let skills_dir = get_agent_skills_dir(agent_id.as_deref(), custom_path.as_deref());
     let new_skill_dir = skills_dir.join(&safe_id);
 
-    if new_skill_dir.exists() {
+    if new_skill_dir.exists() || skills_dir.join(format!("{}.disabled", safe_id)).exists() {
         return Err(format!("Skill '{}' already exists", safe_id));
     }
 
@@ -370,14 +407,24 @@ pub fn delete_skill(
     agent_id: Option<String>,
     custom_path: Option<String>,
 ) -> Result<(), String> {
+    let safe_id = sanitize_skill_id(&id)?;
+    let base_name = safe_id.trim_end_matches(".disabled");
+
     let skills_dir = get_agent_skills_dir(agent_id.as_deref(), custom_path.as_deref());
-    let mut skill_path = skills_dir.join(&id);
+    let mut skill_path = skills_dir.join(base_name);
     if !skill_path.exists() {
-        skill_path = skills_dir.join(format!("{}.disabled", id));
+        skill_path = skills_dir.join(format!("{}.disabled", base_name));
     }
 
     if !skill_path.exists() {
         return Err(format!("Skill '{}' does not exist.", id));
+    }
+
+    // Verify canonical path confinement to prevent any path traversal deletion
+    if let (Ok(canon_root), Ok(canon_target)) = (skills_dir.canonicalize(), skill_path.canonicalize()) {
+        if !canon_target.starts_with(&canon_root) || canon_target == canon_root {
+            return Err("Security error: Attempted deletion outside the designated skills folder.".to_string());
+        }
     }
 
     fs::remove_dir_all(&skill_path).map_err(|e| format!("Failed to delete skill directory: {}", e))?;
@@ -392,32 +439,52 @@ pub fn copy_skill_to_agent(
     custom_path_from: Option<String>,
     custom_path_to: Option<String>,
 ) -> Result<String, String> {
+    let safe_id = sanitize_skill_id(&id)?;
+    let base_name = safe_id.trim_end_matches(".disabled");
+
     let src_root = get_agent_skills_dir(from_agent.as_deref(), custom_path_from.as_deref());
     let dst_root = get_agent_skills_dir(Some(&to_agent), custom_path_to.as_deref());
 
-    let mut src_dir = src_root.join(&id);
+    let mut src_dir = src_root.join(base_name);
     if !src_dir.exists() {
-        src_dir = src_root.join(format!("{}.disabled", id));
+        src_dir = src_root.join(format!("{}.disabled", base_name));
     }
 
     if !src_dir.exists() {
         return Err(format!("Source skill '{}' not found in source agent.", id));
     }
 
-    let dst_dir = dst_root.join(&id);
-    if dst_dir.exists() || dst_root.join(format!("{}.disabled", id)).exists() {
+    let dst_dir = dst_root.join(base_name);
+    if dst_dir.exists() || dst_root.join(format!("{}.disabled", base_name)).exists() {
         return Err(format!("Skill '{}' already exists in target agent.", id));
     }
 
     fs::create_dir_all(&dst_root).map_err(|e| e.to_string())?;
     copy_dir_all(&src_dir, &dst_dir).map_err(|e| format!("Failed to copy skill: {}", e))?;
 
-    Ok(id)
+    Ok(base_name.to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_sanitize_skill_id_valid() {
+        assert_eq!(sanitize_skill_id("my-skill").unwrap(), "my-skill");
+        assert_eq!(sanitize_skill_id("test_runner_123").unwrap(), "test_runner_123");
+    }
+
+    #[test]
+    fn test_sanitize_skill_id_blocks_path_traversal() {
+        assert!(sanitize_skill_id("../etc/passwd").is_err());
+        assert!(sanitize_skill_id("..\\windows\\system32").is_err());
+        assert!(sanitize_skill_id("/absolute/path").is_err());
+        assert!(sanitize_skill_id("skill/nested").is_err());
+        assert!(sanitize_skill_id("C:\\Windows").is_err());
+        assert!(sanitize_skill_id(".hidden").is_err());
+        assert!(sanitize_skill_id("evil\0null").is_err());
+    }
 
     #[test]
     fn test_parse_frontmatter_valid() {

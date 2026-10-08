@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { WindowMode } from "./types";
 import { useSkills } from "./hooks/useSkills";
+import { useUpdater } from "./hooks/useUpdater";
 import { api } from "./services/api";
 
 import { Header } from "./components/Header";
@@ -11,6 +12,7 @@ import { SkillInspector } from "./components/SkillInspector";
 import { CreateSkillModal } from "./components/CreateSkillModal";
 import { MarketplaceModal } from "./components/MarketplaceModal";
 import { ConfirmModal } from "./components/ConfirmModal";
+import { UpdateModal } from "./components/UpdateModal";
 
 export function App() {
   const {
@@ -41,6 +43,15 @@ export function App() {
     installDirect,
     installFromUrl,
   } = useSkills();
+
+  const {
+    updateInfo,
+    isChecking: isCheckingUpdates,
+    error: updateError,
+    isModalOpen: isUpdateModalOpen,
+    setIsModalOpen: setIsUpdateModalOpen,
+    checkForUpdatesNow,
+  } = useUpdater();
 
   const [windowMode, setWindowMode] = useState<WindowMode>("popover");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -106,6 +117,8 @@ export function App() {
         onRefresh={loadSkills}
         onCreateSkill={() => setIsCreateModalOpen(true)}
         onToggleWindowMode={toggleWindowMode}
+        hasUpdate={!!updateInfo?.hasUpdate}
+        onOpenUpdates={() => setIsUpdateModalOpen(true)}
       />
 
       {/* Main Body */}
@@ -213,6 +226,16 @@ export function App() {
         isDestructive={true}
         onConfirm={handleConfirmDelete}
         onCancel={() => setSkillToDelete(null)}
+      />
+
+      {/* Auto-Update Modal */}
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        updateInfo={updateInfo}
+        error={updateError}
+        isChecking={isCheckingUpdates}
+        onCheckAgain={checkForUpdatesNow}
       />
     </div>
   );

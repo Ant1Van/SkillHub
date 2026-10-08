@@ -58,7 +58,7 @@ describe("FilterBar Component", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search skills (⌘K)...");
+    const input = screen.getByPlaceholderText(/Search skills/);
     fireEvent.change(input, { target: { value: "playwright" } });
     expect(onSearchChange).toHaveBeenCalledWith("playwright");
   });

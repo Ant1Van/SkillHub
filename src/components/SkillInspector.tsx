@@ -12,6 +12,7 @@ import {
 import { SkillItem, AgentTarget } from "../types";
 import { Switch } from "./Switch";
 import { api } from "../services/api";
+import { getFileManagerName } from "../utils/platform";
 
 interface SkillInspectorProps {
   skill: SkillItem;
@@ -172,11 +173,11 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
                   </button>
                   <button
                     onClick={() => onRevealInFinder(skill.path)}
-                    title="Reveal in Finder / Explorer"
+                    title={`Reveal in ${getFileManagerName()}`}
                     className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700/60 transition-colors"
                   >
                     <ExternalLink className="w-3 h-3" />
-                    Finder
+                    {getFileManagerName()}
                   </button>
                 </div>
               </div>

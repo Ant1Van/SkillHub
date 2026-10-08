@@ -1,6 +1,7 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { FilterStatus } from "../types";
+import { getSearchShortcutLabel } from "../utils/platform";
 
 interface FilterBarProps {
   searchQuery: string;
@@ -30,7 +31,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search skills (⌘K)..."
+          placeholder={`Search skills (${getSearchShortcutLabel()})...`}
           className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#0b0c0d] border border-zinc-800/90 rounded text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
         />
       </div>

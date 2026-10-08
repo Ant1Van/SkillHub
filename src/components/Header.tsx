@@ -9,7 +9,8 @@ import {
   Compass,
   Check,
   FolderCog,
-  Bot
+  Bot,
+  Sparkles
 } from "lucide-react";
 import { AgentTarget, WindowMode } from "../types";
 
@@ -28,6 +29,8 @@ interface HeaderProps {
   onRefresh: () => void;
   onCreateSkill: () => void;
   onToggleWindowMode: () => void;
+  hasUpdate?: boolean;
+  onOpenUpdates?: () => void;
 }
 
 const AGENT_COLORS: Record<string, { dot: string; badge: string; text: string }> = {
@@ -54,6 +57,8 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   onCreateSkill,
   onToggleWindowMode,
+  hasUpdate,
+  onOpenUpdates,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCustomPathModalOpen, setIsCustomPathModalOpen] = useState(false);
@@ -146,6 +151,18 @@ export const Header: React.FC<HeaderProps> = ({
                   <FolderCog className="w-3.5 h-3.5" />
                   <span>Configure Custom Folder...</span>
                 </button>
+                {onOpenUpdates && (
+                  <button
+                    onClick={() => {
+                      onOpenUpdates();
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 text-left text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Check for Updates...</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -158,6 +175,17 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Action Buttons */}
       <div className="flex items-center gap-1">
+        {hasUpdate && onOpenUpdates && (
+          <button
+            onClick={onOpenUpdates}
+            title="Software update is available"
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-purple-600/30 text-purple-300 border border-purple-500/50 hover:bg-purple-600/50 transition-colors animate-pulse mr-1"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-300" />
+            <span>Update</span>
+          </button>
+        )}
+
         <button
           onClick={onExplore}
           title="Explore & Install Community Skills"
@@ -169,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onRevealFolder}
-          title={`Open ${currentAgent.path || "skills"} in Finder`}
+          title={`Open ${currentAgent.path || "skills"} folder on disk`}
           className="p-1.5 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors duration-150"
         >
           <FolderOpen className="w-3.5 h-3.5" />
