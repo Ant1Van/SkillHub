@@ -2,10 +2,11 @@
   <img src="src-tauri/icons/128x128@2x.png" width="120" alt="SkillHub Logo" />
 </p>
 
-<h1 align="center">SkillHub for Claude Code</h1>
+<h1 align="center">SkillHub</h1>
 
 <p align="center">
-  <strong>The open-source GUI and Community Marketplace for managing Claude Code skills.</strong>
+  <strong>The Universal Desktop Manager & Marketplace for AI Coding Agent Skills</strong><br />
+  <em>Supporting Claude Code, OpenAI Codex, Cursor, Cline / Roo Code, Windsurf, and custom workspaces.</em>
 </p>
 
 <p align="center">
@@ -20,23 +21,32 @@
 
 ## 💡 Why SkillHub?
 
-Claude Code brings powerful autonomous capabilities through its **Skills** system (`SKILL.md`). However, skills typically sit hidden inside `~/.claude/skills/` with:
+Modern AI coding agents (Claude Code, OpenAI Codex, Cursor, Cline, Windsurf) bring game-changing autonomy through **Skills and Instruction Rules** (`SKILL.md`). However, skills typically sit isolated in hidden directories:
+- ❌ Fragmented across agents (`~/.claude/skills`, `~/.codex/skills`, `~/.cursor/skills`, `~/.cline/skills`).
 - ❌ No visual way to know which skills are currently active or disabled.
 - ❌ No one-click toggle to enable/disable skills for specific tasks.
-- ❌ No centralized marketplace to discover and install community skills.
-- ❌ Manual folder creation and terminal commands required to add or delete skills.
+- ❌ No centralized marketplace to discover and install community skills across agents.
+- ❌ No easy way to share or copy a skill from Claude Code to Codex or Cursor.
 
-**SkillHub solves this completely.** It provides a lightweight, ultra-fast native desktop application that lives in your menu bar and dock, giving you full visual mastery over your Claude Code workflow.
+**SkillHub solves this completely.** It provides a lightweight, ultra-fast native desktop application that lives in your menu bar and dock, giving you full visual mastery and seamless cross-agent skill management.
 
 ---
 
 ## ✨ Features
 
+- 🤖 **Universal Multi-Agent Support**:
+  - 🟣 **Claude Code** (`~/.claude/skills`)
+  - 🟢 **OpenAI Codex & ChatGPT** (`~/.codex/skills`)
+  - 🔵 **Cursor IDE** (`~/.cursor/skills`)
+  - 🟠 **Cline / Roo Code** (`~/.cline/skills`)
+  - 🌊 **Windsurf Cascade** (`~/.windsurf/skills`)
+  - 📁 **Custom Workspaces** (Point to any project skills directory)
+- 🔄 **Cross-Agent Skill Sharing**: Copy any skill from Claude to Codex or Cursor in 1 click.
 - ⚡ **Lightweight & Fast**: Built with **Tauri 2.0 (Rust)** + **React 19** + **Tailwind CSS v4**. Bundle size is only **~4 MB** with near-zero memory footprint.
 - 🎛️ **Instant On/Off Toggle**: Disable or enable any skill instantly without losing your configuration.
 - 🛍️ **1-Click Community Marketplace**:
   - **Curated Vault**: Explore top skills for Testing (Playwright, TDD), Security, DevOps, Database optimization, and AI Agent workflows.
-  - **Live GitHub Search**: Search open-source community repositories on GitHub and clone them directly into your Claude skills directory.
+  - **Live GitHub Search**: Search open-source community repositories on GitHub and clone them directly into your selected agent.
 - 🔍 **Real-Time Search & Filters**: Filter by `All`, `Active`, or `Disabled` status with instant keyboard shortcut (`⌘K` / `Ctrl+K`).
 - 🛠️ **Full Studio Mode**:
   - Inspect frontmatter and full documentation.

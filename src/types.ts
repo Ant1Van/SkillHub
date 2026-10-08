@@ -18,5 +18,15 @@ export interface SkillItem {
   files: SkillFile[];
 }
 
+export interface AgentTarget {
+  id: string;
+  name: string;
+  path: string;
+  description: string;
+  exists: boolean;
+  skills_count: number;
+  active_count: number;
+}
+
 export type FilterStatus = "all" | "active" | "disabled";
 export type WindowMode = "popover" | "studio";

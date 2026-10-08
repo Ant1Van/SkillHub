@@ -6,37 +6,47 @@ import {
   Check, 
   X, 
   FileCode,
-  Trash2
+  Trash2,
+  Copy
 } from "lucide-react";
-import { SkillItem } from "../types";
+import { SkillItem, AgentTarget } from "../types";
 import { Switch } from "./Switch";
 import { api } from "../services/api";
 
 interface SkillInspectorProps {
   skill: SkillItem;
+  agents: AgentTarget[];
+  currentAgentId: string;
   onClose: () => void;
   onToggle: (id: string, currentStatus: boolean) => void;
   onDelete: (id: string, name: string) => void;
   onSaveContent: (id: string, newContent: string) => Promise<void>;
   onRevealInFinder: (path: string) => void;
+  onCopyToAgent: (skillId: string, toAgentId: string) => Promise<void>;
 }
 
 export const SkillInspector: React.FC<SkillInspectorProps> = ({
   skill,
+  agents,
+  currentAgentId,
   onClose,
   onToggle,
   onDelete,
   onSaveContent,
   onRevealInFinder,
+  onCopyToAgent,
 }) => {
   const [activeTab, setActiveTab] = useState<"overview" | "editor" | "files">("overview");
   const [editorContent, setEditorContent] = useState(skill.raw_content);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+  const [copySuccessMessage, setCopySuccessMessage] = useState<string | null>(null);
 
   React.useEffect(() => {
     setEditorContent(skill.raw_content);
     setSaveSuccess(false);
+    setCopySuccessMessage(null);
   }, [skill.id, skill.raw_content]);
 
   const handleSave = async () => {
@@ -49,6 +59,22 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
       setIsSaving(false);
     }
   };
+
+  const handleCopy = async (targetAgentId: string) => {
+    try {
+      setIsCopying(true);
+      await onCopyToAgent(skill.id, targetAgentId);
+      const targetName = agents.find((a) => a.id === targetAgentId)?.name || targetAgentId;
+      setCopySuccessMessage(`Copied to ${targetName}!`);
+      setTimeout(() => setCopySuccessMessage(null), 3000);
+    } catch (err: any) {
+      alert(`Failed to copy: ${err}`);
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
+  const otherAgents = agents.filter((a) => a.id !== currentAgentId && a.id !== "custom");
 
   return (
     <div className="flex flex-col h-full bg-[#111214] border-l border-zinc-800/80 text-zinc-100">
@@ -135,7 +161,7 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
                   <button
                     onClick={() => {
                       const match = skill.raw_content.match(/https:\/\/github\.com\/[a-zA-Z0-9_\-\.\/]+/);
-                      const targetUrl = match ? match[0].replace(/[\)\"\'>\s]+$/, "") : `https://github.com/search?q=${encodeURIComponent(skill.id + " claude skill")}&type=code`;
+                      const targetUrl = match ? match[0].replace(/[\)\"\'>\s]+$/, "") : `https://github.com/search?q=${encodeURIComponent(skill.id + " skill")}&type=code`;
                       api.openBrowserUrl(targetUrl);
                     }}
                     title="Find / Open on GitHub"
@@ -146,7 +172,7 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
                   </button>
                   <button
                     onClick={() => onRevealInFinder(skill.path)}
-                    title="Reveal in Finder"
+                    title="Reveal in Finder / Explorer"
                     className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700/60 transition-colors"
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -156,10 +182,42 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
               </div>
             </div>
 
+            {/* Cross-Agent Sharing */}
+            {otherAgents.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                    Copy to Other AI Agents
+                  </label>
+                  {copySuccessMessage && (
+                    <span className="text-[11px] text-emerald-400 font-medium animate-in fade-in">
+                      {copySuccessMessage}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {otherAgents.map((target) => (
+                    <button
+                      key={target.id}
+                      onClick={() => handleCopy(target.id)}
+                      disabled={isCopying}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700/60 transition-colors disabled:opacity-50"
+                      title={`Copy this skill into ${target.name} (${target.path})`}
+                    >
+                      <Copy className="w-3 h-3 text-zinc-400" />
+                      <span>Copy to {target.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div className="p-3 bg-[#18191c] rounded-md border border-zinc-800">
-                <span className="text-[11px] text-zinc-400 block mb-0.5">Scope</span>
-                <span className="text-xs font-semibold capitalize text-zinc-200">{skill.scope} (~/.claude/skills)</span>
+                <span className="text-[11px] text-zinc-400 block mb-0.5">Status</span>
+                <span className={`text-xs font-semibold ${skill.is_enabled ? "text-emerald-400" : "text-zinc-500"}`}>
+                  {skill.is_enabled ? "Enabled" : "Disabled (.disabled)"}
+                </span>
               </div>
               <div className="p-3 bg-[#18191c] rounded-md border border-zinc-800">
                 <span className="text-[11px] text-zinc-400 block mb-0.5">Total Assets</span>
@@ -180,12 +238,12 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
               >
                 {saveSuccess ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    Saved
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    Saved!
                   </>
                 ) : (
                   <>
-                    <Save className="w-3 h-3" />
+                    <Save className="w-3.5 h-3.5" />
                     Save Changes
                   </>
                 )}
@@ -194,37 +252,33 @@ export const SkillInspector: React.FC<SkillInspectorProps> = ({
             <textarea
               value={editorContent}
               onChange={(e) => setEditorContent(e.target.value)}
+              className="w-full flex-1 min-h-[300px] p-3 font-mono text-xs bg-[#18191c] border border-zinc-800 rounded-md text-zinc-200 focus:outline-hidden focus:border-zinc-600 resize-none"
               spellCheck={false}
-              className="w-full h-[360px] p-3 font-mono text-xs bg-[#0b0c0d] border border-zinc-800 rounded-md text-zinc-200 focus:outline-none focus:border-zinc-500 leading-relaxed resize-none"
-              placeholder="---\nname: ...\ndescription: ...\n---\n..."
             />
           </div>
         )}
 
         {activeTab === "files" && (
           <div className="space-y-2">
-            <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
-              Skill Files & Directory Tree
+            <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">
+              File Tree ({skill.files.length})
             </span>
-            <div className="p-2 bg-[#18191c] rounded-md border border-zinc-800 space-y-1">
+            <div className="border border-zinc-800 rounded-md bg-[#18191c] divide-y divide-zinc-800/60 max-h-[320px] overflow-y-auto">
               {skill.files.length === 0 ? (
-                <p className="text-xs text-zinc-500 p-2">Only root SKILL.md present</p>
+                <div className="p-3 text-xs text-zinc-500 italic">No additional files found.</div>
               ) : (
                 skill.files.map((file) => (
-                  <div
-                    key={file.rel_path}
-                    className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-zinc-800/50 text-xs font-mono"
-                  >
+                  <div key={file.rel_path} className="flex items-center justify-between px-3 py-2 text-xs">
                     <div className="flex items-center gap-2 truncate">
                       {file.is_dir ? (
-                        <Folder className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <Folder className="w-3.5 h-3.5 text-amber-500/80 shrink-0" />
                       ) : (
-                        <FileCode className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                        <FileCode className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                       )}
-                      <span className="text-zinc-300 truncate">{file.rel_path}</span>
+                      <span className="font-mono text-zinc-300 truncate">{file.rel_path}</span>
                     </div>
                     {!file.is_dir && (
-                      <span className="text-[10px] text-zinc-500 shrink-0">
+                      <span className="text-[10px] font-mono text-zinc-500 shrink-0 ml-2">
                         {(file.size_bytes / 1024).toFixed(1)} KB
                       </span>
                     )}

@@ -15,6 +15,8 @@ import {
 import { CURATED_MARKETPLACE_SKILLS, CommunitySkill } from "../data/marketplaceSkills";
 import { api } from "../services/api";
 
+import { AgentTarget } from "../types";
+
 interface GitHubSearchResult {
   name: string;
   repo: string;
@@ -26,6 +28,7 @@ interface MarketplaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   installedSkillIds: string[];
+  currentAgent: AgentTarget;
   onInstallDirect: (id: string, content: string) => Promise<void>;
   onInstallUrl: (url: string, customName?: string) => Promise<void>;
 }
@@ -34,6 +37,7 @@ export const MarketplaceModal: React.FC<MarketplaceModalProps> = ({
   isOpen,
   onClose,
   installedSkillIds,
+  currentAgent,
   onInstallDirect,
   onInstallUrl,
 }) => {
@@ -131,8 +135,13 @@ export const MarketplaceModal: React.FC<MarketplaceModalProps> = ({
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-zinc-300" />
             <div>
-              <h3 className="text-sm font-semibold tracking-tight">Claude Skills Marketplace</h3>
-              <p className="text-[11px] text-zinc-400">Discover and install skills in 1-click</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold tracking-tight">AI Skills Marketplace</h3>
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700/60 text-zinc-300">
+                  Target: {currentAgent.name}
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400">Discover and install skills directly into {currentAgent.name}</p>
             </div>
           </div>
           <button

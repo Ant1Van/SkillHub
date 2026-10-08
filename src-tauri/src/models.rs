@@ -21,3 +21,14 @@ pub struct SkillItem {
     pub raw_content: String,
     pub files: Vec<SkillFile>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct AgentTarget {
+    pub id: String,
+    pub name: String,
+    pub path: String,
+    pub description: String,
+    pub exists: bool,
+    pub skills_count: usize,
+    pub active_count: usize,
+}

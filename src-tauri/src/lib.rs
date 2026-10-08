@@ -61,6 +61,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             skills::get_skills,
+            skills::get_agents,
+            skills::copy_skill_to_agent,
             skills::toggle_skill,
             skills::save_skill_content,
             skills::create_skill,

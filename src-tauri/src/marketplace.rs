@@ -1,9 +1,14 @@
-use crate::skills::get_claude_skills_dir;
+use crate::skills::get_agent_skills_dir;
 use std::fs;
 
 #[tauri::command]
-pub fn install_skill_direct(id: String, content: String) -> Result<String, String> {
-    let skills_dir = get_claude_skills_dir();
+pub fn install_skill_direct(
+    id: String,
+    content: String,
+    agent_id: Option<String>,
+    custom_path: Option<String>,
+) -> Result<String, String> {
+    let skills_dir = get_agent_skills_dir(agent_id.as_deref(), custom_path.as_deref());
     let target_dir = skills_dir.join(&id);
 
     if target_dir.exists() {
@@ -18,8 +23,13 @@ pub fn install_skill_direct(id: String, content: String) -> Result<String, Strin
 }
 
 #[tauri::command]
-pub fn install_from_url(repo_url: String, custom_name: Option<String>) -> Result<String, String> {
-    let skills_dir = get_claude_skills_dir();
+pub fn install_from_url(
+    repo_url: String,
+    custom_name: Option<String>,
+    agent_id: Option<String>,
+    custom_path: Option<String>,
+) -> Result<String, String> {
+    let skills_dir = get_agent_skills_dir(agent_id.as_deref(), custom_path.as_deref());
     let clean_url = repo_url.trim();
 
     let folder_name = if let Some(c) = custom_name {

@@ -1,22 +1,32 @@
 import React, { useState } from "react";
 import { X, Sparkles } from "lucide-react";
+import { AgentTarget } from "../types";
 
 interface CreateSkillModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (name: string, description: string, instructions: string) => Promise<void>;
+  currentAgent: AgentTarget;
+  agents: AgentTarget[];
+  onCreate: (name: string, description: string, instructions: string, targetAgent?: string) => Promise<void>;
 }
 
 export const CreateSkillModal: React.FC<CreateSkillModalProps> = ({
   isOpen,
   onClose,
+  currentAgent,
+  agents,
   onCreate,
 }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState(currentAgent.id);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    setSelectedAgentId(currentAgent.id);
+  }, [currentAgent.id]);
 
   if (!isOpen) return null;
 
@@ -30,7 +40,7 @@ export const CreateSkillModal: React.FC<CreateSkillModalProps> = ({
     try {
       setIsSubmitting(true);
       setError(null);
-      await onCreate(name, description, instructions);
+      await onCreate(name, description, instructions, selectedAgentId);
       setName("");
       setDescription("");
       setInstructions("");
@@ -51,7 +61,7 @@ export const CreateSkillModal: React.FC<CreateSkillModalProps> = ({
         <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800/80">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-zinc-300" />
-            <h3 className="text-sm font-semibold tracking-tight">Create Claude Code Skill</h3>
+            <h3 className="text-sm font-semibold tracking-tight">Create AI Agent Skill</h3>
           </div>
           <button
             onClick={onClose}
@@ -70,6 +80,23 @@ export const CreateSkillModal: React.FC<CreateSkillModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
             <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">
+              Target Agent
+            </label>
+            <select
+              value={selectedAgentId}
+              onChange={(e) => setSelectedAgentId(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-hidden focus:border-zinc-500 font-medium"
+            >
+              {agents.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name} ({agent.path})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">
               Skill Name / ID
             </label>
             <input
@@ -77,20 +104,20 @@ export const CreateSkillModal: React.FC<CreateSkillModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. git-automator, test-runner"
-              className="w-full px-3 py-1.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-none focus:border-zinc-500 font-mono"
+              className="w-full px-3 py-1.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-hidden focus:border-zinc-500 font-mono"
             />
           </div>
 
           <div>
             <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400 mb-1">
-              Description (When Claude should invoke it)
+              Description (When agent should invoke it)
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Automatically generates clean git commits and PR descriptions"
-              className="w-full px-3 py-1.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-none focus:border-zinc-500"
+              className="w-full px-3 py-1.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-hidden focus:border-zinc-500"
             />
           </div>
 
@@ -101,9 +128,9 @@ export const CreateSkillModal: React.FC<CreateSkillModalProps> = ({
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              placeholder="## Guidelines\n1. Check git status before committing..."
+              placeholder="## Guidelines&#10;1. Check git status before committing..."
               rows={4}
-              className="w-full p-2.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-none focus:border-zinc-500 font-mono resize-none leading-relaxed"
+              className="w-full p-2.5 text-xs bg-[#0b0c0d] border border-zinc-800 rounded text-zinc-200 focus:outline-hidden focus:border-zinc-500 font-mono resize-none leading-relaxed"
             />
           </div>
 

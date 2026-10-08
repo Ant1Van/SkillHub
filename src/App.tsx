@@ -16,6 +16,12 @@ export function App() {
   const {
     skills,
     filteredSkills,
+    agents,
+    currentAgentId,
+    currentAgent,
+    setCurrentAgentId,
+    customPath,
+    setCustomPath,
     selectedSkill,
     selectedSkillId,
     setSelectedSkillId,
@@ -31,6 +37,7 @@ export function App() {
     saveSkillContent,
     createSkill,
     deleteSkill,
+    copySkillToAgent,
     installDirect,
     installFromUrl,
   } = useSkills();
@@ -85,12 +92,17 @@ export function App() {
     <div className="flex flex-col h-screen w-screen bg-[#0c0d0e] text-zinc-100 overflow-hidden font-sans border border-zinc-800/80 rounded-lg select-none">
       {/* Top Header */}
       <Header
+        currentAgent={currentAgent}
+        agents={agents}
+        onSelectAgent={setCurrentAgentId}
+        onSetCustomPath={setCustomPath}
+        customPath={customPath}
         activeCount={activeCount}
         disabledCount={disabledCount}
         isLoading={isLoading}
         windowMode={windowMode}
         onExplore={() => setIsMarketplaceOpen(true)}
-        onRevealFolder={() => api.revealInFinder("~/.claude/skills")}
+        onRevealFolder={() => api.revealInFinder(currentAgent.path || "~/.claude/skills")}
         onRefresh={loadSkills}
         onCreateSkill={() => setIsCreateModalOpen(true)}
         onToggleWindowMode={toggleWindowMode}
@@ -120,12 +132,12 @@ export function App() {
             {isLoading && skills.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-zinc-500 text-xs">
                 <RefreshCw className="w-5 h-5 animate-spin mb-2 text-zinc-400" />
-                Scanning ~/.claude/skills...
+                Scanning {currentAgent.path || "skills"}...
               </div>
             ) : filteredSkills.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-zinc-500 text-xs text-center p-4">
                 <AlertCircle className="w-5 h-5 mb-2 text-zinc-600" />
-                No skills found matching your filter.
+                No skills found in {currentAgent.name}.
               </div>
             ) : (
               filteredSkills.map((skill) => (
@@ -152,11 +164,14 @@ export function App() {
           <div className="w-1/2 h-full">
             <SkillInspector
               skill={selectedSkill}
+              agents={agents}
+              currentAgentId={currentAgentId}
               onClose={() => setSelectedSkillId(null)}
               onToggle={toggleSkill}
               onDelete={(id, name) => setSkillToDelete({ id, name })}
               onSaveContent={saveSkillContent}
               onRevealInFinder={(path) => api.revealInFinder(path)}
+              onCopyToAgent={copySkillToAgent}
             />
           </div>
         )}
@@ -164,14 +179,18 @@ export function App() {
 
       {/* Footer Quick Bar */}
       <footer className="flex items-center justify-between px-3 py-1.5 bg-[#141517] border-t border-zinc-800/80 text-[10px] text-zinc-400 font-mono shrink-0">
-        <span>~/.claude/skills</span>
-        <span>Operate Mode · 100% English</span>
+        <span className="truncate max-w-[280px]" title={currentAgent.path}>
+          {currentAgent.path || "~/.claude/skills"}
+        </span>
+        <span>{currentAgent.name} · SkillHub Studio</span>
       </footer>
 
       {/* Create Skill Modal */}
       <CreateSkillModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        currentAgent={currentAgent}
+        agents={agents}
         onCreate={createSkill}
       />
 
@@ -180,6 +199,7 @@ export function App() {
         isOpen={isMarketplaceOpen}
         onClose={() => setIsMarketplaceOpen(false)}
         installedSkillIds={skills.map((s) => s.id)}
+        currentAgent={currentAgent}
         onInstallDirect={installDirect}
         onInstallUrl={installFromUrl}
       />
@@ -187,8 +207,8 @@ export function App() {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={!!skillToDelete}
-        title="Delete Claude Code Skill"
-        message={`Are you sure you want to permanently delete "${skillToDelete?.name}"? This will remove its folder from ~/.claude/skills.`}
+        title={`Delete Skill from ${currentAgent.name}`}
+        message={`Are you sure you want to permanently delete "${skillToDelete?.name}"? This will remove its folder from ${currentAgent.path}.`}
         confirmLabel="Delete Permanently"
         isDestructive={true}
         onConfirm={handleConfirmDelete}
