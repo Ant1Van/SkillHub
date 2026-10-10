@@ -65,15 +65,21 @@ Modern AI coding agents (Claude Code, OpenAI Codex, Cursor, Cline, Windsurf) bri
 Install SkillHub in one command via the official tap:
 
 ```bash
-brew install --cask Ant1Van/tap/skillhub
+brew install --cask --no-quarantine Ant1Van/tap/skillhub
 ```
 
-Or tap first and then install:
+Or standard tap & install:
 
 ```bash
 brew tap Ant1Van/tap
 brew install --cask skillhub
 ```
+
+> [!NOTE]
+> If macOS Gatekeeper blocks opening or says *"SkillHub is damaged"*, this is standard macOS quarantine behavior for open-source apps. Either install with `--no-quarantine` as shown above, or run this one-time command in Terminal:
+> ```bash
+> xattr -cr /Applications/SkillHub.app
+> ```
 
 To update in the future:
 ```bash
